@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const context=vm.createContext({assert,Money:require('../money.js'),Date,console});
+vm.runInContext(`const names=['Bạn','Bình','An','Chi','Dũng','Hà','Linh','Minh'];
+let bills=[{id:1,amount:200000,ids:[0],payer:1,source:'personal'}],payments=[],pendingContributions=[];
+const balances=()=>Money.balances(bills,payments,8), fund=()=>({cash:4000000,owed:0,available:4000000});
+const fmt=n=>String(n), close=()=>{},render=()=>{},toast=()=>{},show=()=>{};`,context);
+vm.runInContext(fs.readFileSync(require.resolve('../flows.js'),'utf8'),context);
+vm.runInContext(`
+feedback.push({id:1,status:'open'});closePeriod=closePeriod;periodView=()=>{};periodHistory=()=>{};
+closePeriod();assert.equal(closedPeriods.length,0);
+feedback[0].status='resolved';proposal={approved:true,values:{frequency:'monthly',netting:false},votes:[0,1,2,3,4,5,6,7]};
+closePeriod();assert.equal(period.number,2);assert.equal(period.opening[0],-200000);assert.equal(balances()[0],-200000);
+assert.equal(policy.version,2);assert.equal(policy.netting,false);assert.equal(period.frequency,'monthly');
+assert.equal(closedPeriods[0].policy.version,1);assert.equal(notifications[0].key,'summary:1');
+payments.push({from:0,to:1,amount:50000,status:'confirmed',confirmedPeriod:2});
+assert.equal(balances()[0],-150000);assert.equal(closedPeriods[0].closing[0],-200000);
+notificationView=()=>{};notificationEnabled=false;const count=notifications.length;previewReminder();assert.equal(notifications.length,count);
+notificationEnabled=true;previewReminder();previewReminder();assert.equal(notifications.length,count+1);
+payments.push({from:0,to:1,amount:1000,status:'pending'});previewReminder();assert.equal(notifications.length,count+1);
+assert.equal(periodEnd({start:'2026-11-09',frequency:'monthly'}),'2026-11-30');
+console.log('Passed: close blockers, carry without duplication, immutable snapshot, policy next-period effect, notification opt-out and deduplication.');
+`,context);

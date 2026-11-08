@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+const context=vm.createContext({Money:require('../money.js'),assert,structuredClone});
+vm.runInContext(`let names=['Bạn','Bình','An','Chi','Dũng','Hà','Linh','Minh'],all=names.map((_,i)=>i),groupName='Hội mình đi đâu?';
+let bills=[],payments=[],deposits=4000000,refunded=0,pendingContributions=[],fundEvents=[],policy={version:1},proposal=null,period={number:1},closedPeriods=[],feedback=[],notifications=[],notificationEnabled=true,invitation={status:'active'},policyHistory=[],feedbackSequence=0,draft=null,receiptUrl=null,debtTab='mine';
+const actions={}, $=()=>({textContent:''}),close=()=>{},go=()=>{},toast=()=>{},render=()=>{};`,context);
+vm.runInContext(fs.readFileSync(require.resolve('../groups.js'),'utf8'),context);
+vm.runInContext(`
+assert.equal(groups.length,3);
+switchGroup('office');assert.equal(names.length,6);assert.equal(all.length,6);assert.equal(deposits,1200000);
+const officeDebt=Money.personalDebts(bills,payments,names.length,0);assert.equal(officeDebt.owe,240000);
+payments.push({from:0,to:1,amount:20000,status:'confirmed'});deposits+=100000;
+feedback.push({id:1,status:'open'});invitation.status='revoked';notificationEnabled=false;period.number=2;
+switchGroup('travel');assert.equal(names.length,10);assert.equal(feedback.length,0);assert.equal(invitation.status,'active');assert.equal(notificationEnabled,true);assert.equal(period.number,1);
+assert.equal(Money.personalDebts(bills,payments,names.length,0).receive,680000);
+switchGroup('office');assert.equal(deposits,1300000);assert.equal(payments.length,1);assert.equal(feedback.length,1);assert.equal(invitation.status,'revoked');assert.equal(notificationEnabled,false);assert.equal(period.number,2);
+assert.equal(Money.personalDebts(bills,payments,names.length,0).owe,220000);
+switchGroup('friends');assert.equal(deposits,4000000);assert.equal(payments.length,0);assert.equal(names.length,8);
+switchGroup('unknown');assert.equal(activeGroupId,'friends');
+`,context);
+console.log('Passed: multiple memberships, 6/8/10 members, group-local money/feedback/policy/period/link state, round-trip preservation.');

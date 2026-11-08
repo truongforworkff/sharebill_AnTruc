@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.pyc
+node_modules/
+.env
+.env.*
+*.log
+# Bản Dart thử nghiệm cũ không thuộc bản phát hành FRS/HTML này.
+/lib/
+/test/

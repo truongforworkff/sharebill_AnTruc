@@ -1,0 +1,94 @@
+CHUNG — THIẾT KẾ HTML SHARE BILL
+Phiên bản giao diện 0.5 · 08/11/2026
+
+MỞ XEM
+Mở Chung-Mobile.html bằng trình duyệt. File này chứa toàn bộ HTML/CSS/JS,
+không cần cài đặt. Font Be Vietnam Pro tải từ Google Fonts; khi mất mạng,
+giao diện dùng font hệ thống. Tải lại trang để đặt lại dữ liệu minh họa.
+
+BẢN THIẾT KẾ
+- Tên “Chung” là tên tạm để trình bày ý tưởng, chưa phải tên sản phẩm chốt.
+- Bảng màu: indigo #4148BC, nền trắng xám #F7F8FC, tím nhạt #E3E6FF,
+  cam đất cho khoản nợ. Số tiền rõ, 4 mục điều hướng dưới.
+- Màn hình: Tổng quan / Quỹ nhóm / Công nợ / Hoạt động.
+- Thêm bill: ảnh tùy chọn, số tiền, chọn người, nguồn tiền, xem trước, ghi nhận.
+- Có thể quay lại sửa phần chia trước khi xác nhận.
+- Thanh toán: số tiền một phần/toàn bộ, nội dung chuyển khoản, ảnh minh chứng,
+  trạng thái chờ, mô phỏng người nhận xác nhận hoặc từ chối.
+- Quỹ: tiền hiện có, khoản ứng cần hoàn, số còn có thể chi, nộp quỹ, hoàn ứng.
+- Nguồn tiền quỹ chỉ khả dụng khi đủ cả nhóm. Bản mẫu dùng nhóm 8 người.
+- Chia đều, làm tròn VND, giữ chỗ khoản ứng, cơ chế xác nhận là các đề xuất
+  đang minh họa UX; không thay thế quyết định duyệt FRS.
+
+BỔ SUNG BẮT BUỘC TRONG FRS 0.3
+- Chạm tên nhóm ở đầu màn hình: một tài khoản tham gia 3 nhóm (6/8/10 người).
+  Quỹ, bill, công nợ, kỳ chốt và phản hồi độc lập; chuyển lại vẫn giữ dữ liệu.
+  Đây là các nhóm mẫu đã tham gia, chưa có đăng nhập hoặc gia nhập nhóm thật.
+- Công nợ: nợ ai, ai nợ mình; tổng nợ và tổng cần thu độc lập với số dư ròng.
+  Ví dụ: nợ Bình 200.000đ, An nợ mình 150.000đ; hai tổng vẫn hiện đầy đủ.
+  Đề xuất bù trừ toàn nhóm hiển thị riêng bên dưới, chưa phải thanh toán.
+- Chốt kỳ tuần/tháng, chuyển số dư, lịch sử bản chốt không đổi.
+- Giải thích số dư từ bill và thanh toán.
+- Quy ước nhóm, mô phỏng biểu quyết và áp dụng kỳ kế tiếp.
+- Báo chia sai, phản hồi có lý do, chặn chốt kỳ còn phản hồi mở.
+- Link riêng cho xem nhóm không cần tài khoản; link chung cần trưởng nhóm duyệt.
+- Hộp thư tổng kết và xem trước nhắc tiền, bật/tắt lời nhắc.
+Đây là chức năng nền tảng, không được mô tả là lợi thế độc quyền.
+
+THAM KHẢO NGÔN NGỮ SẢN PHẨM
+Monzo Split: số dư dễ hiểu, chia chi phí tiếp diễn, thanh toán một phần.
+https://monzo.com/features/monzo-split
+MoMo Quỹ Nhóm: minh bạch quỹ và lịch sử để các thành viên cùng theo dõi.
+https://www.momo.vn/quy-nhom
+Giao diện, bảng màu và nhãn “Chung” được xây riêng; không dùng logo của hai hãng.
+
+ĐÃ KIỂM TRA
+- Chia tiền lẻ, cộng dồn/bù trừ, thanh toán chờ và đã xác nhận.
+- Tạo bill 5 người; 8 người; chặn vượt quỹ; số dư sau khi tạo bill.
+- Nộp quỹ 500.000đ, xác nhận, hoàn ứng 400.000đ và lịch sử.
+- Giao diện trình duyệt ở chiều rộng 320, 390, 430 và 1200px.
+- Kiểm tra logic độc lập: node tests/money.test.cjs và node tests/flows.test.cjs.
+- Hai tổng công nợ, người đối ứng, khoản chờ, trả một phần/toàn bộ;
+  chặn chốt kỳ, chuyển dư không trùng, bản chốt bất biến, quy ước kỳ sau.
+
+GIỚI HẠN
+Đây là prototype frontend. Dữ liệu ở bộ nhớ của phiên, chưa có tài khoản,
+đồng bộ nhiều máy, phân quyền thật, OCR, kết nối ngân hàng hay chuyển tiền thật.
+Link, biểu quyết và thông báo chỉ mô phỏng cục bộ, không đồng bộ giữa máy.
+Phản hồi bill mới minh họa nhánh giữ nguyên có giải thích, chưa sửa số tiền.
+Ngưỡng duyệt 8/8 là đề xuất UX, chưa phải quy tắc sản phẩm được chốt.
+Ảnh do người xem chọn chỉ được xem cục bộ trong phiên. Chưa kiểm tra trên
+điện thoại vật lý, bàn phím iOS/Android hoặc trình đọc màn hình thực tế.
+
+CHỈNH THIẾT KẾ
+membership.js: quy tắc liên kết hồ sơ và duyệt lời mời. invitations.js: màn mời và xem khách.
+index.html: cấu trúc. styles.css: trình bày. app.js: tương tác và dữ liệu mẫu.
+money.js: phép chia và bù trừ. flows.js: kỳ, quy ước, phản hồi, link, thông báo. Chung-Mobile.html: bản đóng gói để mở trực tiếp.
+
+Kiểm tra nhiều nhóm: node tests/groups.test.cjs. groups.js quản lý ngữ cảnh nhóm mẫu.
+
+CÔNG NỢ XUYÊN NHÓM
+Chọn “Với từng người” ở đầu màn hình, rồi chọn Huy để xem ví dụ 3 nhóm chung.
+Bạn nợ Huy 120.000đ; Huy nợ bạn 130.000đ; chênh lệch Huy nợ bạn 10.000đ.
+Mở từng nhóm từ chi tiết, hoặc chọn “Theo nhóm” để về nhóm đang xem.
+Ghép người bằng mã tài khoản mẫu, không theo tên. Tổng hợp không tự tất toán.
+
+THIẾT KẾ ANIMATE UI (0.4)
+redesign.css: diện mạo mới và chuyển động nhẹ khi bấm, chuyển chế độ, mở bảng.
+Áp dụng hướng dẫn và đường cong chuyển động của skill Animate UI bằng CSS;
+không cài thư viện React. Có quy tắc giảm chuyển động theo cài đặt hệ thống.
+Giữ nguyên logic và các luồng nghiệp vụ. Xem ANIMATE-UI-NOTICES.txt.
+
+LỜI MỜI VÀ HỒ SƠ (FRS 0.4)
+Tổng quan → Cả nhóm → Link riêng cạnh Chi (hồ sơ chưa đăng ký).
+Xem thử phía người nhận: Nhóm / Quỹ / Công nợ / Bill & lịch sử.
+Đăng ký & giữ hồ sơ này: mô phỏng liên kết tài khoản, không tăng số thành viên.
+Link chung → Xem thử → Gửi yêu cầu → Mô phỏng trưởng nhóm duyệt.
+Trưởng nhóm chọn hồ sơ chưa liên kết hoặc người mới; không tự chọn theo tên.
+Mã tài khoản nhập tay chỉ để thử luồng; sản phẩm thật lấy từ phiên xác thực.
+Link riêng là quyền xem: ai nhận link cũng xem được. Có thu hồi và hết hạn.
+Liên kết tài khoản sẽ thu hồi link khách cũ. Mỗi nhóm giữ hồ sơ riêng.
+Bản mẫu dùng chỉ số cố định của thành viên cho sổ tiền, chỉ thêm cuối danh sách;
+backend phải dùng Membership ID bất biến, không được đổi thứ tự/đánh lại ID sổ.
+Chưa có backend, đăng nhập thật, kiểm soát truy cập server, hoặc link liên máy.
+Kiểm tra: node tests/membership.test.cjs.

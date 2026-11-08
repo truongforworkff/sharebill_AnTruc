@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),M=require('../membership.js');
+const s={groupId:'g',leaderId:'leader',members:[{id:'h1',name:'Huy',accountId:null},{id:'h2',name:'Huy',accountId:null}],links:[],requests:[],audit:[]};
+const bill={ids:['h1','h2'],amount:100000},before=JSON.stringify(bill);
+M.issue(s,'personal','h2','private','leader');assert.equal(M.read(s,'private').id,'h2');
+M.claim(s,'private','account-huy');assert.equal(s.members.length,2);assert.equal(s.members[0].accountId,null);assert.equal(s.members[1].accountId,'account-huy');assert.equal(JSON.stringify(bill),before);assert.throws(()=>M.read(s,'private'));assert.throws(()=>M.claim(s,'private','other'));
+M.issue(s,'general',null,'general','leader');assert.throws(()=>M.read(s,'general'));const r=M.request(s,'general','new-huy','Huy');assert.equal(s.members.length,2);assert.equal(M.request(s,'general','new-huy','Huy').id,r.id);assert.throws(()=>M.approve(s,r.id,'h1','not-leader'));assert.throws(()=>M.approve(s,r.id,'h2','leader'));assert.equal(r.status,'pending');M.approve(s,r.id,'h1','leader');assert.equal(s.members.length,2);assert.throws(()=>M.approve(s,r.id,'h1','leader'));assert.throws(()=>M.request(s,'general','new-huy','Huy'));
+const r2=M.request(s,'general','third-huy','Huy');M.approve(s,r2.id,null,'leader');assert.equal(s.members.length,3);assert.equal(s.members[2].name,'Huy');assert.notEqual(s.members[2].id,'h1');
+const r3=M.request(s,'general','fourth','Huy');M.reject(s,r3.id,'leader');assert.equal(s.members.length,3);assert.throws(()=>M.approve(s,r3.id,null,'leader'));
+M.revoke(s,'general','leader');assert.throws(()=>M.request(s,'general','fifth','Huy'));
+const l=M.issue(s,'personal','h1','expired','leader');l.expiresAt=0;assert.throws(()=>M.read(s,'expired'));
+assert.throws(()=>M.issue(s,'personal','missing','bad','leader'));assert.equal(JSON.stringify(bill),before);
+console.log('Passed: duplicate names, guest read, claim preserves membership, revocation, expiry, leader approval, linking/new member, duplicate requests and rejection.');
