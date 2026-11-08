@@ -14,6 +14,10 @@ BillGroup fixture() => BillGroup(
   ],
 );
 void main() {
+  test('IDs can be created without platform-specific shift overflow', () {
+    expect(newId(), isNotEmpty);
+    expect(newId(), isNot(newId()));
+  });
   test('Integer split preserves total and rejects duplicates', () {
     expect(splitEqually(100000, ['a', 'b', 'c']), {
       'a': 33334,

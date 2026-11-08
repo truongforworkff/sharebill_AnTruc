@@ -59,4 +59,4 @@ Chưa triển khai backend, mời thật qua Internet, xác thực ngân hàng, 
 
 ### Kiểm chứng bản Flutter
 
-Đã chạy 10 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.
+Đã chạy 11 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Build web release thành công. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.

@@ -5,7 +5,7 @@ part 'workflow.dart';
 const fundId = '_fund';
 const maxAmount = 1000000000;
 String newId() =>
-    '${DateTime.now().microsecondsSinceEpoch}-${Random.secure().nextInt(1 << 32)}';
+    '${DateTime.now().microsecondsSinceEpoch}-${Random.secure().nextInt(0x100000000)}';
 
 class RuleError implements Exception {
   final String message;
