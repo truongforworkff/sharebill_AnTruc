@@ -11,6 +11,7 @@ import 'ledger.dart';
 import 'repository.dart';
 import 'members_page.dart';
 import 'workflow_page.dart';
+import 'statement_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -106,7 +107,19 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<BillGroup> groups = [];
   String? groupId, actor, loadError, recovered;
+  final scrollController = ScrollController();
   int tab = 0;
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  void resetScroll() {
+    if (scrollController.hasClients) scrollController.jumpTo(0);
+  }
+
   bool loading = true, busy = false;
   BillGroup? get group => groups.where((g) => g.id == groupId).firstOrNull;
   @override
@@ -264,12 +277,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget totals(BillGroup g, String person) {
-    final owe = g.directTransfers
-        .where((t) => t.from == person)
-        .fold<int>(0, (s, t) => s + t.amount);
-    final receive = g.directTransfers
-        .where((t) => t.to == person)
-        .fold<int>(0, (s, t) => s + t.amount);
+    final summary = g.totalsFor(person);
+    final owe = summary.owe, receive = summary.receive;
     return Row(
       children: [
         Expanded(child: metric('Tổng nợ', owe, Colors.deepOrange)),
@@ -319,8 +328,11 @@ class _HomePageState extends State<HomePage> {
           title: Text(
             '${group!.memberName(e.payer)}${e.receiver.isNotEmpty ? ' → ${group!.memberName(e.receiver)}' : ''}',
           ),
-          subtitle: Text(e.createdAt),
+          subtitle: Text(
+            'Ngày phát sinh: ${e.occurredOn ?? e.createdAt.substring(0, 10)}\nGhi sổ: ${e.createdAt}',
+          ),
         ),
+        if (e.note.isNotEmpty) ListTile(title: Text(e.note)),
         if (e.kind == EntryKind.expense)
           ...splitEqually(e.amount, e.participants).entries.map(
             (s) => ListTile(
@@ -397,6 +409,21 @@ class _HomePageState extends State<HomePage> {
     bool readonly = false,
   }) => [
     totals(g, who),
+    OutlinedButton.icon(
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => StatementPage(group: g, member: who),
+        ),
+      ),
+      icon: const Icon(Icons.receipt_long_outlined),
+      label: const Text('Vì sao có số tiền này?'),
+    ),
+    if (!g.directTransfers.any((t) => t.from == who || t.to == who))
+      const Padding(
+        padding: EdgeInsets.all(16),
+        child: Text('Bạn không còn công nợ cá nhân trong nhóm này.'),
+      ),
     const SizedBox(height: 16),
     const Text(
       'Nợ ai · Ai nợ mình',
@@ -412,7 +439,17 @@ class _HomePageState extends State<HomePage> {
                     ? 'Bạn nợ ${g.memberName(t.to)}'
                     : '${g.memberName(t.from)} nợ bạn',
               ),
-              subtitle: Text(money(t.amount)),
+              subtitle: Text('${money(t.amount)} · Chạm để xem nguồn gốc'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => StatementPage(
+                    group: g,
+                    member: who,
+                    counterparty: t.from == who ? t.to : t.from,
+                  ),
+                ),
+              ),
               trailing: !readonly && t.from == who
                   ? TextButton(
                       onPressed: () =>
@@ -475,6 +512,77 @@ class _HomePageState extends State<HomePage> {
           )
           .map((e) => entryTile(e, readonly: readonly)),
     ];
+  }
+
+  void myGroups() {
+    final current = group!.members.firstWhere((m) => m.id == actor);
+    final rows = <({BillGroup group, Member me})>[];
+    for (final g in groups) {
+      final me = current.accountId == null
+          ? (g.id == groupId ? current : null)
+          : g.members
+                .where((m) => m.accountId == current.accountId)
+                .firstOrNull;
+      if (me != null) rows.add((group: g, me: me));
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: const Text('Nhóm của tôi')),
+          body: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              Text(
+                '${rows.length} nhóm · ${current.name}',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const Text('Công nợ và quỹ được giữ riêng trong từng nhóm.'),
+              ...rows.map(
+                (r) => Card(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        groupId = r.group.id;
+                        actor = r.me.id;
+                        tab = 0;
+                        resetScroll();
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(r.group.name),
+                            subtitle: Text(
+                              '${r.group.members.length} thành viên · ${r.me.id == r.group.treasurer ? 'Quản lý / thủ quỹ' : 'Thành viên'}',
+                            ),
+                            trailing: Icon(
+                              r.group.id == groupId
+                                  ? Icons.check_circle
+                                  : Icons.chevron_right,
+                            ),
+                          ),
+                          totals(r.group, r.me.id),
+                          Text(
+                            'Quỹ khả dụng: ${money(r.group.balances.available)}',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void contactView() {
@@ -546,6 +654,7 @@ class _HomePageState extends State<HomePage> {
                                       .firstWhere((m) => m.accountId == account)
                                       .id;
                                   tab = 2;
+                                  resetScroll();
                                 });
                               },
                             ),
@@ -609,7 +718,10 @@ class _HomePageState extends State<HomePage> {
           ? null
           : NavigationBar(
               selectedIndex: tab,
-              onDestinationSelected: (v) => setState(() => tab = v),
+              onDestinationSelected: (v) => setState(() {
+                tab = v;
+                resetScroll();
+              }),
               destinations: const [
                 NavigationDestination(
                   icon: Icon(Icons.home_outlined),
@@ -671,6 +783,7 @@ class _HomePageState extends State<HomePage> {
                   child: RefreshIndicator(
                     onRefresh: load,
                     child: ListView(
+                      controller: scrollController,
                       padding: const EdgeInsets.all(20),
                       children: [
                         DropdownButtonFormField<String>(
@@ -692,14 +805,29 @@ class _HomePageState extends State<HomePage> {
                               )
                               .toList(),
                           onChanged: (id) => setState(() {
+                            resetScroll();
+                            final account = group!.members
+                                .firstWhere((m) => m.id == actor)
+                                .accountId;
                             groupId = id;
                             actor =
                                 group!.members
-                                    .where((m) => m.accountId == 'local-me')
+                                    .where(
+                                      (m) =>
+                                          account != null &&
+                                          m.accountId == account,
+                                    )
                                     .firstOrNull
                                     ?.id ??
                                 group!.treasurer;
                           }),
+                        ),
+                        TextButton.icon(
+                          onPressed: myGroups,
+                          icon: const Icon(Icons.groups_outlined),
+                          label: const Text(
+                            'Nhóm của tôi · Xem công nợ từng nhóm',
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),

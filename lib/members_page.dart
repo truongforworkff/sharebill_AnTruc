@@ -194,7 +194,13 @@ class _MembersPageState extends State<MembersPage> {
               title: Text(e.title),
               subtitle: Text('${money(e.amount)} · ${e.status.name}'),
               children: [
-                ListTile(title: Text(g.memberName(e.payer))),
+                ListTile(
+                  title: Text(g.memberName(e.payer)),
+                  subtitle: Text(
+                    'Ngày phát sinh: ${e.occurredOn ?? e.createdAt.substring(0, 10)}',
+                  ),
+                ),
+                if (e.note.isNotEmpty) ListTile(title: Text(e.note)),
                 if (e.evidence != null)
                   Image.memory(
                     base64Decode(e.evidence!),

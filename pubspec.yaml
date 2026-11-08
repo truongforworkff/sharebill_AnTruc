@@ -1,7 +1,7 @@
 name: sharebill_antruc
 description: Chung - chia bill, cong no va quy nhom.
 publish_to: none
-version: 0.1.0+1
+version: 0.2.0+2
 environment:
   sdk: '>=3.9.0 <4.0.0'
 dependencies:
@@ -9,6 +9,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  cupertino_icons: ^1.0.8
   image_picker: ^1.2.0
   path_provider: ^2.1.5
   sembast: ^3.8.5

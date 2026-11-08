@@ -59,4 +59,12 @@ Chưa triển khai backend, mời thật qua Internet, xác thực ngân hàng, 
 
 ### Kiểm chứng bản Flutter
 
-Đã chạy 11 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Build web release thành công. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.
+Đã chạy 15 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Build web release thành công. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.
+
+### Bổ sung ở bản 0.2
+
+- **Nhóm của tôi:** xem số thành viên, vai trò, tổng nợ, tổng cần thu và quỹ khả dụng của từng nhóm; chạm để chuyển nhóm. Khi đổi nhóm giữ đúng tài khoản đang xem nếu tài khoản có trong nhóm.
+- **Giải thích số dư (FR15):** vào Công nợ → Vì sao có số tiền này; lọc theo một người hoặc cả nhóm. Mỗi dòng có khoản tăng/giảm, số dư lũy kế và bill/chứng từ gốc. Quỹ, khoản chưa xác nhận, bị từ chối và đã đảo không được cộng vào công nợ. Hai tổng nợ/thu vẫn giữ riêng.
+- **Ngày và ghi chú bill (FR03):** nhập ngày phát sinh không ở tương lai, ghi chú tối đa 500 ký tự; lưu cùng chứng từ, giữ khi xác nhận và xem được qua link khách mô phỏng. Ngày dùng để tra cứu; bill nhập muộn được ghi nhận vào kỳ hiện tại, không sửa snapshot kỳ cũ. Dữ liệu phiên bản trước vẫn đọc được.
+
+Bản này tiếp tục hoàn thiện ứng dụng cục bộ. Phần FR15 giải thích giao dịch đã có; đề xuất thanh toán qua bù trừ toàn nhóm vẫn chưa được triển khai. Backend, xác thực tài khoản, phân quyền và đồng bộ nhiều thiết bị chưa hoàn thành.

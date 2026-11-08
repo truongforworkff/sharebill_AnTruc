@@ -1,6 +1,7 @@
 import 'dart:math';
 part 'membership.dart';
 part 'workflow.dart';
+part 'reports.dart';
 
 const fundId = '_fund';
 const maxAmount = 1000000000;
@@ -47,6 +48,8 @@ class Entry {
   final List<String> participants;
   final bool fundExpense;
   final String? evidence, reviewedBy, reviewedAt, reason, reverses;
+  final String? occurredOn;
+  final String note;
 
   Entry({
     required this.id,
@@ -65,6 +68,8 @@ class Entry {
     this.reviewedAt,
     this.reason,
     this.reverses,
+    this.occurredOn,
+    this.note = '',
   });
 
   Entry reviewed(EntryStatus status, String actor, String? reason) => Entry(
@@ -84,6 +89,8 @@ class Entry {
     reviewedAt: DateTime.now().toIso8601String(),
     reason: reason,
     reverses: reverses,
+    occurredOn: occurredOn,
+    note: note,
   );
 
   Map<String, Object?> toJson() => {
@@ -103,6 +110,8 @@ class Entry {
     'reviewedAt': reviewedAt,
     'reason': reason,
     'reverses': reverses,
+    'occurredOn': occurredOn,
+    'note': note,
   };
   factory Entry.fromJson(Map<String, dynamic> j) => Entry(
     id: j['id'] as String,
@@ -121,6 +130,8 @@ class Entry {
     reviewedAt: j['reviewedAt'] as String?,
     reason: j['reason'] as String?,
     reverses: j['reverses'] as String?,
+    occurredOn: j['occurredOn'] as String?,
+    note: j['note'] as String? ?? '',
   );
 }
 
@@ -361,7 +372,22 @@ class BillGroup {
     required String payer,
     required List<String> participants,
     String? evidence,
+    String? occurredOn,
+    String note = '',
   }) {
+    require(note.trim().length <= 500, 'Ghi chú tối đa 500 ký tự.');
+    if (occurredOn != null) {
+      final date = DateTime.tryParse(occurredOn);
+      final today = DateTime.now();
+      require(
+        RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(occurredOn) &&
+            date != null &&
+            date.toIso8601String().startsWith(occurredOn) &&
+            date.year >= 2000 &&
+            !date.isAfter(DateTime(today.year, today.month, today.day)),
+        'Ngày phát sinh không hợp lệ hoặc nằm trong tương lai.',
+      );
+    }
     require(!entries.any((e) => e.id == id), 'Khoản này đã được lưu.');
     require(
       participants.isNotEmpty &&
@@ -390,6 +416,8 @@ class BillGroup {
       createdAt: DateTime.now().toIso8601String(),
       participants: ordered,
       fundExpense: all,
+      occurredOn: occurredOn,
+      note: note.trim(),
       evidence: evidence,
       status: pending ? EntryStatus.pending : EntryStatus.confirmed,
       reviewedBy: pending ? null : actor,

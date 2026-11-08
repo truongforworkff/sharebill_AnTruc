@@ -145,6 +145,8 @@ class ExpensePage extends StatefulWidget {
 
 class _ExpensePageState extends State<ExpensePage> {
   final title = TextEditingController();
+  final note = TextEditingController();
+  DateTime occurredOn = DateUtils.dateOnly(DateTime.now());
   final amount = TextEditingController();
   final id = newId();
   late Set<String> selected;
@@ -162,6 +164,7 @@ class _ExpensePageState extends State<ExpensePage> {
   @override
   void dispose() {
     title.dispose();
+    note.dispose();
     amount.dispose();
     super.dispose();
   }
@@ -178,6 +181,8 @@ class _ExpensePageState extends State<ExpensePage> {
           id: id,
           actor: widget.actor,
           title: title.text,
+          occurredOn: occurredOn.toIso8601String().substring(0, 10),
+          note: note.text,
           amount: value,
           payer: payer,
           participants: selected.toList(),
@@ -228,6 +233,39 @@ class _ExpensePageState extends State<ExpensePage> {
                 ),
                 const SizedBox(height: 12),
                 amountField(amount, onChanged: () => setState(() {})),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Ngày phát sinh'),
+                  subtitle: Text(
+                    MaterialLocalizations.of(
+                      context,
+                    ).formatMediumDate(occurredOn),
+                  ),
+                  trailing: const Icon(Icons.calendar_month_outlined),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: occurredOn,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now(),
+                    );
+                    if (picked != null && mounted) {
+                      setState(() => occurredOn = picked);
+                    }
+                  },
+                ),
+                TextField(
+                  controller: note,
+                  maxLength: 500,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Ghi chú (không bắt buộc)',
+                  ),
+                ),
+                const Text(
+                  'Ngày để tra cứu. Khoản mới ghi vào kỳ hiện tại, không sửa bản chốt kỳ cũ.',
+                  style: TextStyle(fontSize: 12),
+                ),
                 const SizedBox(height: 20),
                 EvidencePicker(
                   value: evidence,
