@@ -1,0 +1,21 @@
+name: sharebill_antruc
+description: Chung - chia bill, cong no va quy nhom.
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  image_picker: ^1.2.0
+  path_provider: ^2.1.5
+  sembast: ^3.8.5
+  sembast_web: ^2.4.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true

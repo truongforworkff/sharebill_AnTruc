@@ -5,6 +5,19 @@ node_modules/
 .env
 .env.*
 *.log
-# Bản Dart thử nghiệm cũ không thuộc bản phát hành FRS/HTML này.
-/lib/
-/test/
+.dart_tool/
+.flutter-plugins-dependencies
+.packages
+build/
+android/local.properties
+android/key.properties
+*.jks
+*.keystore
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+
+.idea/
+*.iml

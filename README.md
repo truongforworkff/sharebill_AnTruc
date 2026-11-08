@@ -1,6 +1,6 @@
 # sharebill_AnTruc
 
-**Chung** — bản thiết kế mobile cho ứng dụng chia bill, công nợ và quỹ nhóm.
+**Chung** — ứng dụng Flutter thử nghiệm và bản thiết kế mobile cho ứng dụng chia bill, công nợ và quỹ nhóm.
 
 ## Tài liệu và giao diện
 
@@ -36,3 +36,27 @@ node frontend/tests/membership.test.cjs
 Sổ tiền mẫu dùng chỉ số thành viên cố định và chỉ thêm người cuối danh sách; khi triển khai backend phải dùng Membership ID bất biến. Quy tắc xác thực, đồng thời và phân quyền phía server trong FRS chưa được triển khai bằng frontend.
 
 Motion dùng hướng dẫn Animate UI qua CSS. Xem [thông báo giấy phép](frontend/ANIMATE-UI-NOTICES.txt).
+
+
+## Flutter (Dart)
+
+Mã ứng dụng tại `lib/`, kiểm thử tại `test/`. Có lưu dữ liệu cục bộ trên thiết bị (Sembast) và IndexedDB khi chạy web.
+
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+flutter build apk --debug
+flutter build web
+```
+
+Build iOS cần macOS/Xcode và cấu hình signing của chủ dự án. Android cần Android SDK/JDK theo `flutter doctor`.
+
+Bản Flutter có tạo/chuyển nhóm, nhập bill và ảnh, chia đều tiền nguyên VND, quỹ, khoản ứng/hoàn, trả nợ từng phần và xác nhận, hai tổng nợ/thu, tổng hợp theo người xuyên nhóm, lời mời/nhận hồ sơ/duyệt, chốt kỳ, biểu quyết tần suất kỳ, phản hồi và hộp thư nhắc tiền cục bộ. Menu đổi vai dùng để thử các bên trên một máy, không phải đăng nhập hay phân quyền vận hành.
+
+Chưa triển khai backend, mời thật qua Internet, xác thực ngân hàng, OCR, push notification, lựa chọn bù trừ toàn nhóm trong Flutter và sửa lịch sử giao dịch tùy ý. Đăng ký trong luồng mời là mô phỏng liên kết tài khoản; không dùng dữ liệu thật. Quy tắc bắt buộc còn lại được giữ trong FRS, không được coi là đã hoàn thành chỉ vì có giao diện.
+
+### Kiểm chứng bản Flutter
+
+Đã chạy 10 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.
