@@ -59,7 +59,7 @@ Chưa triển khai backend, mời thật qua Internet, xác thực ngân hàng, 
 
 ### Kiểm chứng bản Flutter
 
-Đã chạy 15 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Build web release thành công. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.
+Đã chạy 19 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Build web release thành công. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.
 
 ### Bổ sung ở bản 0.2
 
@@ -68,3 +68,9 @@ Chưa triển khai backend, mời thật qua Internet, xác thực ngân hàng, 
 - **Ngày và ghi chú bill (FR03):** nhập ngày phát sinh không ở tương lai, ghi chú tối đa 500 ký tự; lưu cùng chứng từ, giữ khi xác nhận và xem được qua link khách mô phỏng. Ngày dùng để tra cứu; bill nhập muộn được ghi nhận vào kỳ hiện tại, không sửa snapshot kỳ cũ. Dữ liệu phiên bản trước vẫn đọc được.
 
 Bản này tiếp tục hoàn thiện ứng dụng cục bộ. Phần FR15 giải thích giao dịch đã có; đề xuất thanh toán qua bù trừ toàn nhóm vẫn chưa được triển khai. Backend, xác thực tài khoản, phân quyền và đồng bộ nhiều thiết bị chưa hoàn thành.
+
+### Bộ sticker thông báo
+
+Chạm chuông ở đầu màn hình → **Bộ sticker** để xem sáu mẫu: nhắc thanh toán, đã nhận tiền, nộp quỹ, chốt kỳ, chờ xác nhận và kiểm tra bill. Nét viền tím, màu pastel và biểu cảm vui; vẽ vector trực tiếp bằng Flutter nên không tải ảnh hoặc font emoji bên ngoài.
+
+Hộp thư và phần nhắc tiền dùng cùng thẻ thông báo. Nội dung nghiệp vụ được giữ nguyên; thông báo cũ nhận đúng icon qua mã sự kiện. Mẫu thiết kế luôn ghi “MẪU MINH HỌA”, không tạo giao dịch hoặc thông báo thanh toán giả. Chưa thay đổi icon push của hệ điều hành vì app chưa tích hợp push notification.

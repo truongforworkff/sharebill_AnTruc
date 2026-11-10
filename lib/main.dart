@@ -12,6 +12,8 @@ import 'repository.dart';
 import 'members_page.dart';
 import 'workflow_page.dart';
 import 'statement_page.dart';
+import 'notification_sticker.dart';
+import 'notifications_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -694,6 +696,26 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         actions: [
+          IconButton(
+            tooltip: 'Thông báo',
+            icon: const NotificationSticker(
+              kind: NoticeKind.reminder,
+              size: 36,
+              decorative: true,
+            ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => NotificationsPage(
+                  notices:
+                      g?.notifications
+                          .map((n) => Map<String, dynamic>.from(n as Map))
+                          .toList() ??
+                      const [],
+                ),
+              ),
+            ),
+          ),
           IconButton(
             onPressed: () => addGroup(),
             icon: const Icon(Icons.group_add_outlined),

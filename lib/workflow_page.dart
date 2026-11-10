@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'ledger.dart';
 import 'repository.dart';
 import 'forms.dart';
+import 'notification_sticker.dart';
+import 'notifications_page.dart';
 
 class WorkflowPage extends StatefulWidget {
   final BillRepository repository;
@@ -252,9 +254,9 @@ class _WorkflowPageState extends State<WorkflowPage> {
                     child: const Text('Tạo nhắc theo công nợ hiện tại'),
                   ),
                   ...g.notifications.reversed.map(
-                    (n) => ListTile(
-                      leading: const Icon(Icons.notifications_none),
-                      title: Text(n['text'] as String),
+                    (n) => NoticeCard(
+                      kind: NoticeKind.fromKey(n['key'] as String? ?? ''),
+                      text: n['text'] as String,
                     ),
                   ),
                   const Text(
