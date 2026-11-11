@@ -53,13 +53,15 @@ flutter build web
 
 Build iOS cần macOS/Xcode và cấu hình signing của chủ dự án. Android cần Android SDK/JDK theo `flutter doctor`.
 
+Hướng dẫn cài APK và chạy iPhone: [Build mobile](docs/BUILD-MOBILE.md).
+
 Bản Flutter có tạo/chuyển nhóm, nhập bill và ảnh, chia đều tiền nguyên VND, quỹ, khoản ứng/hoàn, trả nợ từng phần và xác nhận, hai tổng nợ/thu, tổng hợp theo người xuyên nhóm, lời mời/nhận hồ sơ/duyệt, chốt kỳ, biểu quyết tần suất kỳ, phản hồi và hộp thư nhắc tiền cục bộ. Menu đổi vai dùng để thử các bên trên một máy, không phải đăng nhập hay phân quyền vận hành.
 
 Chưa triển khai backend, mời thật qua Internet, xác thực ngân hàng, OCR, push notification, lựa chọn bù trừ toàn nhóm trong Flutter và sửa lịch sử giao dịch tùy ý. Đăng ký trong luồng mời là mô phỏng liên kết tài khoản; không dùng dữ liệu thật. Quy tắc bắt buộc còn lại được giữ trong FRS, không được coi là đã hoàn thành chỉ vì có giao diện.
 
 ### Kiểm chứng bản Flutter
 
-Đã chạy 19 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Build web release thành công. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Chưa kiểm thử trên điện thoại thật hoặc build APK/iOS do máy chưa có Android SDK/JDK và Xcode.
+Đã chạy 19 test logic, lưu trữ và màn hình mobile 390×844; Dart analyzer không có lỗi/cảnh báo. Build web release thành công. Môi trường kiểm tra: Flutter 3.47.9, Dart 3.13.7. Đã build thành công APK Android release cho ARM32, ARM64 và x86_64; đã xác minh chữ ký, toàn vẹn ZIP và căn chỉnh ZIP 16 KB. APK dùng khóa debug để cài thử. Chưa kiểm thử trên điện thoại thật; iOS chưa build vì môi trường hiện tại là Linux, không có Xcode.
 
 ### Bổ sung ở bản 0.2
 
