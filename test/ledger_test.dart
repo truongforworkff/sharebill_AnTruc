@@ -95,6 +95,7 @@ void main() {
       amount: 300000,
       payer: 'h1',
       participants: ['me', 'h1', 'h2'],
+      chargeToFund: true,
     );
     expect(g.balances.cash, 600000);
     expect(g.balances.available, 300000);
@@ -122,7 +123,7 @@ void main() {
     );
   });
   test(
-    'Personal advance can exceed cash; refunds cannot overdraw the fund',
+    'Explicit fund advance can exceed cash; refunds cannot overdraw the fund',
     () {
       final g = fixture();
       g.addExpense(
@@ -132,6 +133,7 @@ void main() {
         amount: 300000,
         payer: 'h1',
         participants: ['me', 'h1', 'h2'],
+        chargeToFund: true,
       );
       expect(g.balances.cash, 0);
       expect(g.balances.owedByFund['h1'], 300000);
@@ -205,6 +207,7 @@ void main() {
       amount: 200000,
       payer: 'h1',
       participants: ['me', 'h1', 'h2'],
+      chargeToFund: true,
     );
     expect(
       () => g.review('cash', 'me', accept: true),

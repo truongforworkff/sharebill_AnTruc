@@ -53,6 +53,7 @@ BillGroup demoGroup() {
     id: newId(),
     actor: 'm2',
     title: 'Cà phê cả nhóm • An ứng',
+    chargeToFund: true,
     amount: 400000,
     payer: 'm2',
     participants: members.map((m) => m.id).toList(),

@@ -77,3 +77,10 @@ Nguồn API: [ML Kit Android](https://developers.google.com/ml-kit/vision/text-r
 - Chưa xác nhận OCR trên điện thoại Android/iPhone thật. OCR không thay thế xác thực giao dịch ngân hàng.
 
 - Android 0.3.0+3: build release thành công ARM32 (25,6 MB), ARM64 (32,3 MB), x86_64 (34,4 MB). Đã kiểm tra chữ ký, ZIP, căn chỉnh ZIP 16 KB, phiên bản và mô hình OCR nằm trong APK. APK ký debug để cài thử; SHA-256 tại thư mục build. Build web release cuối cùng cũng thành công.
+
+## Bản sửa chia bill cá nhân — kiểm chứng trên macOS 12/11/2026
+
+- Flutter 3.47.9 / Dart 3.13.7: 39/39 kiểm thử đã qua; `flutter analyze` không có vấn đề.
+- Cả 6 bộ kiểm thử HTML đã qua, gồm bill đủ nhóm khi quỹ 0đ và trả nợ từng phần.
+- Xcode 27.2: `flutter build ios --simulator --debug` thành công. Bản `.app` dành cho iOS Simulator; không phải IPA được ký để cài trên iPhone hoặc phát hành App Store.
+- Chia bill cá nhân là mặc định dù đủ cả nhóm. Chi trực tiếp từ quỹ và ứng trước cho quỹ là lựa chọn riêng; dữ liệu lịch sử giữ nguyên phân loại đã lưu.

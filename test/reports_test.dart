@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sharebill_antruc/ledger.dart';
 
@@ -74,6 +75,7 @@ void main() {
       amount: 90000,
       payer: 'b',
       participants: ['a', 'b', 'c'],
+      chargeToFund: true,
     );
     expect(g.statement('a'), isEmpty);
     expect(g.statement('b'), isEmpty);

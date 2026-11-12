@@ -371,6 +371,7 @@ class BillGroup {
     required int amount,
     required String payer,
     required List<String> participants,
+    bool chargeToFund = false,
     String? evidence,
     String? occurredOn,
     String note = '',
@@ -401,6 +402,10 @@ class BillGroup {
         .toList();
     final all = ordered.length == members.length;
     require(
+      !chargeToFund || all,
+      'Chỉ ghi chi phí cho quỹ khi đủ tất cả thành viên.',
+    );
+    require(
       hasMember(payer) || (all && payer == fundId),
       'Chỉ dùng quỹ khi đủ tất cả thành viên.',
     );
@@ -415,7 +420,7 @@ class BillGroup {
       amount: amount,
       createdAt: DateTime.now().toIso8601String(),
       participants: ordered,
-      fundExpense: all,
+      fundExpense: payer == fundId || chargeToFund,
       occurredOn: occurredOn,
       note: note.trim(),
       evidence: evidence,

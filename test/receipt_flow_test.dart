@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -93,7 +94,10 @@ void main() {
           );
       final group = await open(tester);
       await tester.pumpAndSettle();
-      final payer = find.byType(DropdownButtonFormField<String>);
+      final payer = find.widgetWithText(
+        DropdownButtonFormField<String>,
+        'Tiền thực tế lấy từ đâu?',
+      );
       await tester.scrollUntilVisible(
         payer,
         300,
@@ -113,9 +117,121 @@ void main() {
       await tester.pumpAndSettle();
       expect(group.entries.single.payer, 'h');
       expect(group.balances.cash, 0);
-      expect(group.balances.owedByFund['h'], 300000);
-      expect(group.balances.available, -300000);
-      expect(group.directTransfers, isEmpty);
+      expect(group.entries.single.fundExpense, isFalse);
+      expect(group.balances.liability, 0);
+      expect(group.balances.available, 0);
+      expect(group.totalsFor('h').receive, 200000);
+      expect(group.totalsFor('me').owe, 100000);
+      expect(group.totalsFor('b').owe, 100000);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('An explicit fund advance keeps personal debts empty', (
+    tester,
+  ) async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          channel,
+          (_) async => 'Tổng thanh toán 300.000 VND',
+        );
+    final group = await open(tester);
+    await tester.pumpAndSettle();
+    final source = find.widgetWithText(
+      DropdownButtonFormField<String>,
+      'Cách ghi khoản chi',
+    );
+    await tester.scrollUntilVisible(
+      source,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final sourceButton = find.descendant(
+      of: source,
+      matching: find.byType(DropdownButton<String>),
+    );
+    await Scrollable.ensureVisible(
+      tester.element(sourceButton),
+      alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(sourceButton);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ứng trước cho quỹ').last);
+    await tester.pumpAndSettle();
+    final save = find.text('Chốt khoản chi');
+    await tester.scrollUntilVisible(
+      save,
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(group.entries.single.fundExpense, isTrue);
+    expect(group.balances.cash, 0);
+    expect(group.balances.owedByFund['me'], 300000);
+    expect(group.directTransfers, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'Changing attendance resets fund mode and stays personal when all return',
+    (tester) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            channel,
+            (_) async => 'Tổng tiền 300.000 VND',
+          );
+      final group = await open(tester);
+      await tester.pumpAndSettle();
+      final source = find.widgetWithText(
+        DropdownButtonFormField<String>,
+        'Cách ghi khoản chi',
+      );
+      await tester.scrollUntilVisible(
+        source,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      final sourceButton = find.descendant(
+        of: source,
+        matching: find.byType(DropdownButton<String>),
+      );
+      await Scrollable.ensureVisible(
+        tester.element(sourceButton),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(sourceButton);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ứng trước cho quỹ').last);
+      await tester.pumpAndSettle();
+      final chip = find.widgetWithText(FilterChip, 'Bình');
+      await tester.ensureVisible(chip);
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<DropdownButtonFormField<String>>(source).initialValue,
+        'personal',
+      );
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<DropdownButtonFormField<String>>(source).initialValue,
+        'personal',
+      );
+      final save = find.text('Chốt khoản chi');
+      await tester.scrollUntilVisible(
+        save,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(group.entries.single.participants, ['me', 'h', 'b']);
+      expect(group.entries.single.fundExpense, isFalse);
+      expect(group.totalsFor('me').receive, 200000);
+      expect(group.balances.liability, 0);
       expect(tester.takeException(), isNull);
     },
   );
