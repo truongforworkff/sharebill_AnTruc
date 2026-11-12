@@ -171,7 +171,8 @@ class _ExpensePageState extends State<ExpensePage> {
   final amount = TextEditingController();
   final id = newId();
   late Set<String> selected;
-  String payer = fundId;
+  late String payer;
+  String source = 'personal';
   String? evidence, error;
   bool busy = false;
   bool reading = false, picking = false;
@@ -184,6 +185,7 @@ class _ExpensePageState extends State<ExpensePage> {
   void initState() {
     super.initState();
     selected = widget.group.members.map((m) => m.id).toSet();
+    payer = widget.actor;
     evidence = widget.recoveredEvidence;
     if (evidence != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -208,37 +210,31 @@ class _ExpensePageState extends State<ExpensePage> {
     });
     if (image == null) return;
     try {
-      final text = await readReceiptText(
-        image,
-      ).timeout(const Duration(seconds: 45));
+      final text = await readReceiptText(image)
+          .timeout(const Duration(seconds: 45));
       if (!mounted || version != scanVersion) return;
       final result = readReceiptAmounts(text);
       setState(() {
         scanned = result;
         if (edits != editVersion) {
-          scanMessage =
-              'Đã giữ số tiền bạn vừa nhập. Hãy đối chiếu với ảnh trước khi chốt.';
+          scanMessage = 'Đã giữ số tiền bạn vừa nhập. Hãy đối chiếu với ảnh trước khi chốt.';
         } else if (result.automaticAmount case final int value) {
           amount.text = value.toString();
           amountFromImage = value;
           scanMessage = 'Đã đọc ${money(value)} · Đã tính phần chia';
         } else if (result.foreignCurrency) {
-          scanMessage =
-              'Ảnh có ngoại tệ. Hãy nhập số tiền VND cần chia; app chưa tự quy đổi.';
+          scanMessage = 'Ảnh có ngoại tệ. Hãy nhập số tiền VND cần chia; app chưa tự quy đổi.';
         } else if (result.candidates.isNotEmpty) {
-          scanMessage =
-              'Chọn tổng tiền cần chia bên dưới. Ảnh chưa cho một tổng tiền rõ ràng.';
+          scanMessage = 'Chọn tổng tiền cần chia bên dưới. Ảnh chưa cho một tổng tiền rõ ràng.';
         } else {
-          scanMessage =
-              'Chưa đọc được tổng tiền. Chọn ảnh rõ hơn hoặc nhập số tiền để chia.';
+          scanMessage = 'Chưa đọc được tổng tiền. Chọn ảnh rõ hơn hoặc nhập số tiền để chia.';
         }
         if (title.text.trim().isEmpty) title.text = 'Bill từ ảnh';
       });
     } catch (_) {
       if (mounted && version == scanVersion) {
         setState(
-          () => scanMessage =
-              'Chưa đọc được ảnh. Bạn có thể thử ảnh khác hoặc nhập tiền; ảnh đã chọn vẫn được giữ.',
+          () => scanMessage = 'Chưa đọc được ảnh. Bạn có thể thử ảnh khác hoặc nhập tiền; ảnh đã chọn vẫn được giữ.',
         );
       }
     } finally {
@@ -270,7 +266,8 @@ class _ExpensePageState extends State<ExpensePage> {
           occurredOn: occurredOn.toIso8601String().substring(0, 10),
           note: note.text,
           amount: value,
-          payer: payer,
+          payer: source == 'fund' ? fundId : payer,
+          chargeToFund: source == 'advance',
           participants: selected.toList(),
           evidence: evidence,
         ),
@@ -370,7 +367,7 @@ class _ExpensePageState extends State<ExpensePage> {
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        all
+                        source != 'personal'
                             ? '${money(value)} · Đủ ${ordered.length} người\nQuỹ chịu chi phí theo quy ước nhóm.'
                             : '${money(value)} · ${ordered.length} người tham gia\n${money(shares.values.first)} / người${value % ordered.length != 0 ? ' (có phân bổ tiền lẻ)' : ''}',
                       ),
@@ -390,9 +387,8 @@ class _ExpensePageState extends State<ExpensePage> {
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Ngày phát sinh'),
                   subtitle: Text(
-                    MaterialLocalizations.of(
-                      context,
-                    ).formatMediumDate(occurredOn),
+                    MaterialLocalizations.of(context)
+                        .formatMediumDate(occurredOn),
                   ),
                   trailing: const Icon(Icons.calendar_month_outlined),
                   onTap: () async {
@@ -433,7 +429,7 @@ class _ExpensePageState extends State<ExpensePage> {
                         selected = all
                             ? {}
                             : widget.group.members.map((m) => m.id).toSet();
-                        if (!all && payer == fundId) payer = widget.actor;
+                        if (!all) source = 'personal';
                       }),
                       child: Text(all ? 'Bỏ chọn' : 'Chọn tất cả'),
                     ),
@@ -449,61 +445,82 @@ class _ExpensePageState extends State<ExpensePage> {
                           selected: selected.contains(m.id),
                           onSelected: (yes) => setState(() {
                             yes ? selected.add(m.id) : selected.remove(m.id);
-                            if (!all && payer == fundId) payer = widget.actor;
+                            if (!all) source = 'personal';
                           }),
                         ),
                       )
                       .toList(),
                 ),
                 const SizedBox(height: 16),
-                Card(
-                  color: all
-                      ? const Color(0xffe3f3ec)
-                      : const Color(0xfffff1d9),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      all
-                          ? payer == fundId
-                                ? 'Đủ nhóm • Chi trực tiếp từ quỹ\nKhả dụng: ${money(widget.group.balances.available)}'
-                                : 'Đủ nhóm • ${widget.group.memberName(payer)} ứng trước\nQuỹ ghi khoản cần hoàn, kể cả khi chưa đủ tiền.'
-                          : 'Đi một phần nhóm • Chia tiền cá nhân\nKhông sử dụng quỹ chung.',
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  key: ValueKey('payer-$payer-$all'),
-                  initialValue: payer,
+                  key: ValueKey('expense-source-$source-$all'),
+                  initialValue: source,
                   decoration: const InputDecoration(
-                    labelText: 'Tiền thực tế lấy từ đâu?',
+                    labelText: 'Cách ghi khoản chi',
                   ),
                   isExpanded: true,
                   items: [
-                    if (all)
-                      const DropdownMenuItem(
-                        value: fundId,
-                        child: Text('Quỹ chung'),
-                      ),
-                    ...widget.group.members.map(
-                      (m) => DropdownMenuItem(
-                        value: m.id,
-                        child: Text('${m.name} trả trước'),
-                      ),
+                    const DropdownMenuItem(
+                      value: 'personal',
+                      child: Text('Chia bill cá nhân'),
                     ),
+                    if (all) ...[
+                      const DropdownMenuItem(
+                        value: 'fund',
+                        child: Text('Chi trực tiếp từ quỹ'),
+                      ),
+                      const DropdownMenuItem(
+                        value: 'advance',
+                        child: Text('Ứng trước cho quỹ'),
+                      ),
+                    ],
                   ],
-                  onChanged: (v) => setState(() => payer = v!),
+                  onChanged: (v) => setState(() => source = v!),
                 ),
-                if (all && payer != fundId)
+                const SizedBox(height: 12),
+                if (source != 'fund')
+                  DropdownButtonFormField<String>(
+                    key: const ValueKey('expense-payer'),
+                    initialValue: payer,
+                    decoration: const InputDecoration(
+                      labelText: 'Tiền thực tế lấy từ đâu?',
+                    ),
+                    isExpanded: true,
+                    items: widget.group.members
+                        .map(
+                          (m) => DropdownMenuItem(
+                            value: m.id,
+                            child: Text('${m.name} trả trước'),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) => setState(() => payer = v!),
+                  ),
+                const SizedBox(height: 12),
+                Card(
+                  color: source == 'personal'
+                      ? const Color(0xfffff1d9)
+                      : const Color(0xffe3f3ec),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(switch (source) {
+                      'fund' =>
+                        'Chi trực tiếp từ quỹ\nKhả dụng: ${money(widget.group.balances.available)}',
+                      'advance' =>
+                        '${widget.group.memberName(payer)} ứng trước cho quỹ\nQuỹ cần hoàn người ứng; không tạo nợ cá nhân.',
+                      _ =>
+                        '${widget.group.memberName(payer)} trả trước\nNgười tham gia nợ người trả theo phần chia, kể cả khi đủ cả nhóm và quỹ bằng 0đ.',
+                    }),
+                  ),
+                ),
+                if (source == 'advance')
                   const Padding(
                     padding: EdgeInsets.only(top: 12),
                     child: Text(
-                      'Ghi quỹ cần hoàn cho người ứng. Chỉ giảm tiền quỹ thực có khi hoàn tiền được xác nhận.',
+                      'Quỹ có thể còn thiếu tiền. Chỉ giảm tiền quỹ thực có khi hoàn tiền được xác nhận.',
                     ),
                   ),
-                if (all &&
-                    payer == fundId &&
-                    widget.actor != widget.group.treasurer)
+                if (source == 'fund' && widget.actor != widget.group.treasurer)
                   const Padding(
                     padding: EdgeInsets.only(top: 12),
                     child: Text('Khoản chi này sẽ chờ thủ quỹ xác nhận.'),
@@ -511,7 +528,7 @@ class _ExpensePageState extends State<ExpensePage> {
                 if (shares.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   Text(
-                    all
+                    source != 'personal'
                         ? 'Chi phí tương đương mỗi người (không ghi nợ)'
                         : 'Phần tiền mỗi người',
                     style: Theme.of(context).textTheme.titleMedium,

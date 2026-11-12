@@ -16,7 +16,8 @@ BẢN THIẾT KẾ
 - Thanh toán: số tiền một phần/toàn bộ, nội dung chuyển khoản, ảnh minh chứng,
   trạng thái chờ, mô phỏng người nhận xác nhận hoặc từ chối.
 - Quỹ: tiền hiện có, khoản ứng cần hoàn, số còn có thể chi, nộp quỹ, hoàn ứng.
-- Nguồn tiền quỹ chỉ khả dụng khi đủ cả nhóm. Bản mẫu dùng nhóm 8 người.
+- Cá nhân trả trước · Chia công nợ là lựa chọn mặc định, kể cả đủ cả nhóm và quỹ bằng 0. Người tham gia nợ người trả phần của mình; quỹ không thay đổi.
+- Chi trực tiếp từ quỹ hoặc Cá nhân ứng cho quỹ là lựa chọn riêng, chỉ khả dụng khi đủ cả nhóm. Bản mẫu dùng nhóm 8 người.
 - Chia đều, làm tròn VND, giữ chỗ khoản ứng, cơ chế xác nhận là các đề xuất
   đang minh họa UX; không thay thế quyết định duyệt FRS.
 
@@ -44,7 +45,7 @@ Giao diện, bảng màu và nhãn “Chung” được xây riêng; không dùn
 
 ĐÃ KIỂM TRA
 - Chia tiền lẻ, cộng dồn/bù trừ, thanh toán chờ và đã xác nhận.
-- Tạo bill 5 người; 8 người; chặn vượt quỹ; số dư sau khi tạo bill.
+- Tạo bill 5 người; 8 người; chọn cá nhân trả trước khi quỹ bằng 0 và kiểm tra công nợ; chọn quỹ rõ ràng và kiểm tra chặn vượt quỹ.
 - Nộp quỹ 500.000đ, xác nhận, hoàn ứng 400.000đ và lịch sử.
 - Giao diện trình duyệt ở chiều rộng 320, 390, 430 và 1200px.
 - Kiểm tra logic độc lập: node tests/money.test.cjs và node tests/flows.test.cjs.
@@ -92,3 +93,5 @@ Bản mẫu dùng chỉ số cố định của thành viên cho sổ tiền, ch
 backend phải dùng Membership ID bất biến, không được đổi thứ tự/đánh lại ID sổ.
 Chưa có backend, đăng nhập thật, kiểm soát truy cập server, hoặc link liên máy.
 Kiểm tra: node tests/membership.test.cjs.
+
+Kiểm tra chia bill không dùng quỹ: node tests/personal_bill.test.cjs.
