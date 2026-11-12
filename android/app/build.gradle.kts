@@ -47,3 +47,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Bundle the Latin OCR model so bill scanning works without a network.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+}

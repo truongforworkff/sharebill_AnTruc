@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'ledger.dart';
+import 'receipt_amount.dart';
+import 'receipt_reader.dart';
 
 String money(int amount) {
   final digits = amount.abs().toString().replaceAllMapped(
@@ -32,10 +34,16 @@ Future<String> readEvidence(XFile file) async {
 class EvidencePicker extends StatefulWidget {
   final String? value;
   final ValueChanged<String?> onChanged;
+  final ValueChanged<bool>? onBusyChanged;
+  final bool readingAmount;
+  final bool automaticAmount;
   const EvidencePicker({
     super.key,
     required this.value,
     required this.onChanged,
+    this.onBusyChanged,
+    this.readingAmount = false,
+    this.automaticAmount = false,
   });
   @override
   State<EvidencePicker> createState() => _EvidencePickerState();
@@ -45,10 +53,12 @@ class _EvidencePickerState extends State<EvidencePicker> {
   bool busy = false;
   Future<void> pick() async {
     setState(() => busy = true);
+    widget.onBusyChanged?.call(true);
     try {
       final file = await ImagePicker().pickImage(
         source: ImageSource.gallery,
         maxWidth: 1600,
+        maxHeight: 2400,
         imageQuality: 80,
         requestFullMetadata: false,
       );
@@ -67,7 +77,10 @@ class _EvidencePickerState extends State<EvidencePicker> {
         );
       }
     } finally {
-      if (mounted) setState(() => busy = false);
+      if (mounted) {
+        setState(() => busy = false);
+        widget.onBusyChanged?.call(false);
+      }
     }
   }
 
@@ -86,24 +99,32 @@ class _EvidencePickerState extends State<EvidencePicker> {
           ),
         ),
         TextButton(
-          onPressed: busy ? null : () => widget.onChanged(null),
+          onPressed: busy || widget.readingAmount
+              ? null
+              : () => widget.onChanged(null),
           child: const Text('Bỏ ảnh này'),
         ),
       ],
       OutlinedButton.icon(
-        onPressed: busy ? null : pick,
+        onPressed: busy || widget.readingAmount ? null : pick,
         icon: const Icon(Icons.add_photo_alternate_outlined),
         label: Text(
-          busy
+          widget.readingAmount
+              ? 'Đang đọc số tiền…'
+              : busy
               ? 'Đang đọc ảnh…'
               : widget.value == null
-              ? 'Thêm ảnh bill hoặc chuyển khoản'
+              ? widget.automaticAmount
+                    ? 'Chọn ảnh bill · Tự chia tiền'
+                    : 'Thêm ảnh bill hoặc chuyển khoản'
               : 'Chọn ảnh khác',
         ),
       ),
-      const Text(
-        'Ảnh là chứng từ tham khảo. Bản thử nghiệm chưa tự đọc số tiền hoặc xác thực ngân hàng.',
-        style: TextStyle(fontSize: 12, color: Colors.black54),
+      Text(
+        widget.automaticAmount
+            ? 'Chọn bill hoặc biên lai chuyển khoản. App đọc tiền và tính phần chia ngay; bạn kiểm tra rồi chốt.'
+            : 'Ảnh là chứng từ tham khảo, không tự xác thực giao dịch ngân hàng.',
+        style: const TextStyle(fontSize: 12, color: Colors.black54),
       ),
     ],
   );
@@ -153,12 +174,76 @@ class _ExpensePageState extends State<ExpensePage> {
   String payer = fundId;
   String? evidence, error;
   bool busy = false;
+  bool reading = false, picking = false;
+  int scanVersion = 0, editVersion = 0;
+  int? amountFromImage;
+  ReceiptAmounts? scanned;
+  String? scanMessage;
   bool get all => selected.length == widget.group.members.length;
   @override
   void initState() {
     super.initState();
     selected = widget.group.members.map((m) => m.id).toSet();
     evidence = widget.recoveredEvidence;
+    if (evidence != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) scanEvidence(evidence);
+      });
+    }
+  }
+
+  Future<void> scanEvidence(String? image) async {
+    final version = ++scanVersion;
+    final edits = editVersion;
+    setState(() {
+      evidence = image;
+      scanned = null;
+      scanMessage = null;
+      error = null;
+      if (image != null || amount.text == amountFromImage?.toString()) {
+        amount.clear();
+      }
+      amountFromImage = null;
+      reading = image != null;
+    });
+    if (image == null) return;
+    try {
+      final text = await readReceiptText(
+        image,
+      ).timeout(const Duration(seconds: 45));
+      if (!mounted || version != scanVersion) return;
+      final result = readReceiptAmounts(text);
+      setState(() {
+        scanned = result;
+        if (edits != editVersion) {
+          scanMessage =
+              'Đã giữ số tiền bạn vừa nhập. Hãy đối chiếu với ảnh trước khi chốt.';
+        } else if (result.automaticAmount case final int value) {
+          amount.text = value.toString();
+          amountFromImage = value;
+          scanMessage = 'Đã đọc ${money(value)} · Đã tính phần chia';
+        } else if (result.foreignCurrency) {
+          scanMessage =
+              'Ảnh có ngoại tệ. Hãy nhập số tiền VND cần chia; app chưa tự quy đổi.';
+        } else if (result.candidates.isNotEmpty) {
+          scanMessage =
+              'Chọn tổng tiền cần chia bên dưới. Ảnh chưa cho một tổng tiền rõ ràng.';
+        } else {
+          scanMessage =
+              'Chưa đọc được tổng tiền. Chọn ảnh rõ hơn hoặc nhập số tiền để chia.';
+        }
+        if (title.text.trim().isEmpty) title.text = 'Bill từ ảnh';
+      });
+    } catch (_) {
+      if (mounted && version == scanVersion) {
+        setState(
+          () => scanMessage =
+              'Chưa đọc được ảnh. Bạn có thể thử ảnh khác hoặc nhập tiền; ảnh đã chọn vẫn được giữ.',
+        );
+      }
+    } finally {
+      if (mounted && version == scanVersion) setState(() => reading = false);
+    }
   }
 
   @override
@@ -170,6 +255,7 @@ class _ExpensePageState extends State<ExpensePage> {
   }
 
   Future<void> submit() async {
+    if (busy || reading || picking) return;
     setState(() {
       busy = true;
       error = null;
@@ -223,6 +309,74 @@ class _ExpensePageState extends State<ExpensePage> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
+                Text(
+                  widget.group.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                EvidencePicker(
+                  value: evidence,
+                  automaticAmount: true,
+                  readingAmount: reading,
+                  onBusyChanged: (value) => setState(() => picking = value),
+                  onChanged: scanEvidence,
+                ),
+                if (reading) ...[
+                  const SizedBox(height: 12),
+                  const LinearProgressIndicator(),
+                  const Text('Đang tìm tổng tiền trên ảnh…'),
+                ],
+                if (scanMessage != null) ...[
+                  const SizedBox(height: 12),
+                  Semantics(liveRegion: true, child: Text(scanMessage!)),
+                ],
+                if (scanned != null &&
+                    !scanned!.foreignCurrency &&
+                    scanned!.automaticAmount == null)
+                  ...scanned!.candidates
+                      .take(6)
+                      .map(
+                        (candidate) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(money(candidate.amount)),
+                          subtitle: Text(
+                            candidate.source,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: const Icon(Icons.add_circle_outline),
+                          onTap: () => setState(() {
+                            editVersion++;
+                            amount.text = candidate.amount.toString();
+                            amountFromImage = candidate.amount;
+                            scanMessage =
+                                'Đã chọn ${money(candidate.amount)} · Đã tính phần chia';
+                          }),
+                        ),
+                      ),
+                const SizedBox(height: 16),
+                amountField(
+                  amount,
+                  onChanged: () => setState(() {
+                    editVersion++;
+                    amountFromImage = null;
+                    if (scanned != null) {
+                      scanMessage = 'Đang chia theo số tiền bạn nhập.';
+                    }
+                  }),
+                ),
+                if (shares.isNotEmpty)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        all
+                            ? '${money(value)} · Đủ ${ordered.length} người\nQuỹ chịu chi phí theo quy ước nhóm.'
+                            : '${money(value)} · ${ordered.length} người tham gia\n${money(shares.values.first)} / người${value % ordered.length != 0 ? ' (có phân bổ tiền lẻ)' : ''}',
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: title,
                   maxLength: 120,
@@ -232,7 +386,6 @@ class _ExpensePageState extends State<ExpensePage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                amountField(amount, onChanged: () => setState(() {})),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Ngày phát sinh'),
@@ -267,11 +420,6 @@ class _ExpensePageState extends State<ExpensePage> {
                   style: TextStyle(fontSize: 12),
                 ),
                 const SizedBox(height: 20),
-                EvidencePicker(
-                  value: evidence,
-                  onChanged: (v) => setState(() => evidence = v),
-                ),
-                const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
@@ -316,7 +464,9 @@ class _ExpensePageState extends State<ExpensePage> {
                     padding: const EdgeInsets.all(16),
                     child: Text(
                       all
-                          ? 'Đủ nhóm • Quỹ chịu chi phí\nKhả dụng: ${money(widget.group.balances.available)}'
+                          ? payer == fundId
+                                ? 'Đủ nhóm • Chi trực tiếp từ quỹ\nKhả dụng: ${money(widget.group.balances.available)}'
+                                : 'Đủ nhóm • ${widget.group.memberName(payer)} ứng trước\nQuỹ ghi khoản cần hoàn, kể cả khi chưa đủ tiền.'
                           : 'Đi một phần nhóm • Chia tiền cá nhân\nKhông sử dụng quỹ chung.',
                     ),
                   ),
@@ -389,7 +539,7 @@ class _ExpensePageState extends State<ExpensePage> {
                   ),
                 const SizedBox(height: 20),
                 FilledButton.icon(
-                  onPressed: busy ? null : submit,
+                  onPressed: busy || reading || picking ? null : submit,
                   icon: const Icon(Icons.check),
                   label: Text(busy ? 'Đang lưu…' : 'Chốt khoản chi'),
                 ),

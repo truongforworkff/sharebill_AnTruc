@@ -121,6 +121,99 @@ void main() {
       throwsA(isA<RuleError>()),
     );
   });
+  test(
+    'Personal advance can exceed cash; refunds cannot overdraw the fund',
+    () {
+      final g = fixture();
+      g.addExpense(
+        id: 'advance',
+        actor: 'me',
+        title: 'Cả nhóm ăn tối',
+        amount: 300000,
+        payer: 'h1',
+        participants: ['me', 'h1', 'h2'],
+      );
+      expect(g.balances.cash, 0);
+      expect(g.balances.owedByFund['h1'], 300000);
+      expect(g.balances.available, -300000);
+      expect(g.directTransfers, isEmpty);
+      expect(
+        () => g.addExpense(
+          id: 'cash',
+          actor: 'me',
+          title: 'Chi quỹ',
+          amount: 1,
+          payer: fundId,
+          participants: ['me', 'h1', 'h2'],
+        ),
+        throwsA(isA<RuleError>()),
+      );
+      void refund(String id) => g.request(
+        id: id,
+        kind: EntryKind.refund,
+        actor: 'me',
+        receiver: 'h1',
+        amount: 100000,
+      );
+      expect(() => refund('too-early'), throwsA(isA<RuleError>()));
+      g.request(
+        id: 'deposit',
+        kind: EntryKind.deposit,
+        actor: 'me',
+        receiver: fundId,
+        amount: 100000,
+      );
+      expect(() => refund('pending-deposit'), throwsA(isA<RuleError>()));
+      g.review('deposit', 'me', accept: true);
+      refund('refund-1');
+      refund('refund-2');
+      expect(g.balances.cash, 100000);
+      g.review('refund-1', 'h1', accept: true);
+      expect(g.balances.cash, 0);
+      expect(g.balances.owedByFund['h1'], 200000);
+      expect(g.balances.available, -200000);
+      expect(
+        () => g.review('refund-2', 'h1', accept: true),
+        throwsA(isA<RuleError>()),
+      );
+      expect(g.entries.last.status, EntryStatus.pending);
+    },
+  );
+
+  test('Pending fund expense rechecks available cash after a new advance', () {
+    final g = fixture();
+    g.request(
+      id: 'deposit',
+      kind: EntryKind.deposit,
+      actor: 'me',
+      receiver: fundId,
+      amount: 100000,
+    );
+    g.review('deposit', 'me', accept: true);
+    g.addExpense(
+      id: 'cash',
+      actor: 'h1',
+      title: 'Chi quỹ',
+      amount: 100000,
+      payer: fundId,
+      participants: ['me', 'h1', 'h2'],
+    );
+    g.addExpense(
+      id: 'advance',
+      actor: 'h1',
+      title: 'Ứng trước',
+      amount: 200000,
+      payer: 'h1',
+      participants: ['me', 'h1', 'h2'],
+    );
+    expect(
+      () => g.review('cash', 'me', accept: true),
+      throwsA(isA<RuleError>()),
+    );
+    expect(g.balances.cash, 100000);
+    expect(g.balances.available, -100000);
+  });
+
   test('Private link targets same-name member; claim keeps ledger and ID', () {
     final g = fixture();
     g.addExpense(

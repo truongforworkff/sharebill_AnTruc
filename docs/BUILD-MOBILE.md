@@ -60,3 +60,20 @@ Tài liệu chính thức: [Thiết lập iOS](https://docs.flutter.dev/platform
 - SHA-256 của các APK được ghi tại `build/app/outputs/flutter-apk/SHA256SUMS.txt`. APK là tệp build trên máy, không commit binary hoặc khóa ký vào Git.
 - Chưa kiểm tra: cài/chạy trên điện thoại Android thật, iOS Simulator hoặc iPhone. Máy không có thiết bị Android được kết nối và không có Xcode.
 - Có cảnh báo phiên bản XML SDK khi Gradle đọc SDK mới, nhưng build và các kiểm tra APK đều thành công.
+
+## Bổ sung đọc ảnh ở phiên bản 0.3
+
+Build theo lệnh phía trên. Android thêm thư viện chính thức `com.google.mlkit:text-recognition:16.0.1`, đóng gói mô hình Latin để đọc ảnh offline. iOS dùng `Vision` của Apple trong AppDelegate, không cần API key hay tải mô hình ML Kit cho iOS.
+
+Chọn ảnh ở màn hình Thêm khoản chi để tự điền tổng tiền và tính phần chia. Kiểm tra bằng biên lai VND, bill có nhiều tổng và ảnh mờ trên thiết bị trước khi dùng thực tế. Những kết quả build 0.2 ở trên không xác nhận bản OCR đã chạy trên thiết bị.
+
+Nguồn API: [ML Kit Android](https://developers.google.com/ml-kit/vision/text-recognition/v2/android), [Apple Vision](https://developer.apple.com/documentation/vision/recognizing-text-in-images), [Tesseract.js](https://github.com/naptha/tesseract.js).
+
+### Kiểm chứng ngày 12/11/2026
+
+- 32 kiểm thử Flutter đã qua, gồm OCR/parser, thao tác sửa tiền, bill đủ nhóm do thành viên ứng trước khi quỹ rỗng, hoàn từng phần và kiểm tra lại số dư lúc duyệt. Analyzer không có vấn đề.
+- 5 bộ kiểm thử HTML đã qua; bản HTML độc lập và ZIP được cập nhật cùng quy tắc ứng trước.
+- Đã kiểm tra OCR thật trong trình duyệt bằng ảnh hóa đơn tổng 550.000đ có VAT, tiền khách đưa 1.000.000đ và tiền thừa. App chọn đúng 550.000đ; lưu bill do Huy ứng trước trong nhóm quỹ 0đ thành công; quỹ cần hoàn Huy 550.000đ, tiền thực có giữ 0đ.
+- Chưa xác nhận OCR trên điện thoại Android/iPhone thật. OCR không thay thế xác thực giao dịch ngân hàng.
+
+- Android 0.3.0+3: build release thành công ARM32 (25,6 MB), ARM64 (32,3 MB), x86_64 (34,4 MB). Đã kiểm tra chữ ký, ZIP, căn chỉnh ZIP 16 KB, phiên bản và mô hình OCR nằm trong APK. APK ký debug để cài thử; SHA-256 tại thư mục build. Build web release cuối cùng cũng thành công.

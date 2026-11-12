@@ -473,6 +473,8 @@ class _HomePageState extends State<HomePage> {
     final g = group!, b = g.balances;
     return [
       metric('Quỹ khả dụng', b.available, const Color(0xff4148bc)),
+      if (b.available < 0)
+        Text('Quỹ còn thiếu ${money(-b.available)} để hoàn đủ tiền ứng.'),
       ListTile(
         title: const Text('Tiền thực có'),
         trailing: Text(money(b.cash)),

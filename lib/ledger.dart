@@ -344,7 +344,7 @@ class BillGroup {
 
   void _checkBalance(Entry e) {
     final b = balances;
-    if (e.kind == EntryKind.expense && e.fundExpense) {
+    if (e.kind == EntryKind.expense && e.fundExpense && e.payer == fundId) {
       require(
         b.available >= e.amount,
         'Quỹ khả dụng không đủ. Hãy nộp thêm quỹ rồi thử lại.',

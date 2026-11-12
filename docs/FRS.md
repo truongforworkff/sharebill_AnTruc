@@ -1,6 +1,6 @@
 # Đặc tả yêu cầu chức năng Share Bill
 
-Phiên bản 0.4 · Ngày 08 tháng 11 năm 2026 · Phạm vi bắt buộc đã cập nhật, chi tiết nghiệp vụ còn cần chốt
+Phiên bản 0.5 · Ngày 12 tháng 11 năm 2026 · Phạm vi bắt buộc đã cập nhật, chi tiết nghiệp vụ còn cần chốt
 
 Share Bill quản lý chia tiền, công nợ và quỹ chung cho nhóm bạn. Tài liệu được chia thành các phân hệ độc lập để bổ sung chức năng mà vẫn theo dõi được tác động đến quy tắc, dữ liệu và nghiệm thu. Mỗi yêu cầu có một mã cố định; phiên bản này bổ sung phạm vi bắt buộc theo xác nhận của chủ sản phẩm. Bản thiết kế HTML dùng để duyệt trải nghiệm, không phải ứng dụng vận hành thật.
 
@@ -24,10 +24,10 @@ Share Bill quản lý chia tiền, công nợ và quỹ chung cho nhóm bạn. T
 | M01–M10 | Phân hệ chức năng; bổ sung phân hệ mới bằng mã tiếp theo |
 | FR01–FR19 | Yêu cầu chức năng; giữ mã cũ khi đổi vị trí hoặc đổi tên |
 | BR01–BR18 | Quy tắc nghiệp vụ dùng chung |
-| AT01–AT44 | Tình huống nghiệm thu; chưa phải kết quả kiểm thử đã chạy |
+| AT01–AT49 | Tình huống nghiệm thu; chưa phải kết quả kiểm thử đã chạy |
 | Q01–Q15 | Câu hỏi chưa có quyết định |
 
-Tách hai trạng thái: phạm vi chức năng và mức duyệt chi tiết. “Bắt buộc” nghĩa là phải có trong sản phẩm, không phải đã triển khai hoặc đã chốt mọi quy tắc. FR14–FR19 và các chức năng nền tảng là bắt buộc; OCR ở FR04 và cách tích hợp ngân hàng ở FR13 vẫn cần quyết định kỹ thuật/phạm vi cụ thể. Các mốc triển khai chưa được ấn định. Ý tưởng khảo sát về người đến muộn, được mời hoặc chia quỹ khi rời nhóm không tự trở thành yêu cầu đã duyệt.
+Tách hai trạng thái: phạm vi chức năng và mức duyệt chi tiết. “Bắt buộc” nghĩa là phải có trong sản phẩm, không phải đã triển khai hoặc đã chốt mọi quy tắc. FR14–FR19 và các chức năng nền tảng là bắt buộc; FR04 tự đọc tiền từ ảnh và tính phần chia ngay đã được xác nhận ngày 12/11/2026; cách tích hợp ngân hàng ở FR13 vẫn cần quyết định kỹ thuật/phạm vi cụ thể. Các mốc triển khai chưa được ấn định. Ý tưởng khảo sát về người đến muộn, được mời hoặc chia quỹ khi rời nhóm không tự trở thành yêu cầu đã duyệt.
 
 ### 1.3 Lịch sử phiên bản
 
@@ -37,6 +37,7 @@ Tách hai trạng thái: phạm vi chức năng và mức duyệt chi tiết. �
 | 0.2 | Chia 7 phân hệ; thêm trạng thái, liên kết yêu cầu và mẫu bổ sung; giữ các quyết định đang mở |
 | 0.3 | Bổ sung FR14–19, công nợ theo người và nhiều nhóm; cập nhật bản HTML |
 | 0.4 | Link riêng xem nhóm không tài khoản; link chung trưởng nhóm duyệt; liên kết hồ sơ giữ lịch sử; AT39–44 |
+| 0.5 | FR04 bắt buộc đọc tiền từ ảnh và tính chia ngay; xử lý tổng tiền mơ hồ, sửa tay, OCR lỗi; sửa BR06 cho ứng trước khi thiếu quỹ; AT45–50 |
 
 ## 2 Tổng quan và phạm vi
 
@@ -56,7 +57,7 @@ Tách hai trạng thái: phạm vi chức năng và mức duyệt chi tiết. �
 - Link riêng mở nhóm trên trình duyệt không cần tài khoản; link chung phải được trưởng nhóm duyệt.
 - Nhắc thanh toán theo kỳ, có quyền kiểm soát thông báo; không gửi nhắc cho khoản đã thanh toán.
 
-Các chức năng trên là phạm vi nền tảng bắt buộc, không được trình bày như lợi thế cạnh tranh đã chứng minh. Chi tiết như vai trò duyệt, giới hạn, làm tròn, xử lý quỹ thiếu và kênh nhắc vẫn là đề xuất có ghi rõ. Người dùng đã yêu cầu cập nhật FRS và giao diện HTML; chưa yêu cầu triển khai backend, ứng dụng Dart hoàn chỉnh hoặc ngân hàng thật.
+Các chức năng trên là phạm vi nền tảng bắt buộc, không được trình bày như lợi thế cạnh tranh đã chứng minh. Chi tiết như vai trò duyệt, giới hạn, làm tròn, xử lý quỹ thiếu và kênh nhắc vẫn là đề xuất có ghi rõ. Người dùng đã yêu cầu cập nhật FRS, giao diện HTML và ứng dụng Flutter. Backend và ngân hàng thật chưa được triển khai.
 
 ### 2.2 Nền tảng và giới hạn hiện tại
 
@@ -140,26 +141,26 @@ Luồng liên kết chính: M01 xác định thành viên → M02 ghi bill → M
 
 **Mục tiêu:** Ghi nhận một lần ăn uống hoặc đi chơi cùng chứng từ và số tiền.
 
-**Tình trạng phạm vi:** Thêm bill đã xác nhận. Tự đọc ảnh bằng OCR và phạm vi nhiều người trả chưa chốt.
+**Tình trạng phạm vi:** Thêm bill, tự đọc số tiền từ ảnh và tính phần chia ngay đã xác nhận. Phạm vi nhiều người trả cho một bill chưa chốt.
 
 | Mã yêu cầu | Chức năng | Trạng thái |
 | --- | --- | --- |
 | FR03 | Thêm hóa đơn | Bắt buộc; chi tiết cần chốt |
-| FR04 | Đọc ảnh hóa đơn | OCR chưa chốt |
+| FR04 | Đọc ảnh bill và tính phần chia ngay | Bắt buộc; đã xác nhận |
 
 **Hành vi bắt buộc:**
 - **FR03:** Tên khoản chi, ngày, tổng tiền, người tham gia, nguồn tiền, ảnh, ghi chú; không mất dữ liệu khi lưu lỗi.
-- **FR04:** Đề xuất tổng tiền từ OCR; cho sửa và bắt buộc kiểm tra; không có kết quả thì nhập tay; không tự ghi sổ từ OCR.
+- **FR04:** Khi chọn ảnh hóa đơn hoặc biên lai chuyển khoản, tự đọc số tiền VND và tính phần chia theo nhóm/người đang chọn, không cần nhập lại số tiền khi tổng đã rõ. Ưu tiên dòng tổng/số tiền; không lấy số tài khoản, mã giao dịch, số dư, tiền khách đưa hay tiền thừa. Nếu nhiều tổng mâu thuẫn hoặc không rõ, để trống số tiền và cho chọn gợi ý/nhập tay. Cho sửa tiền và người tham gia; chỉ ghi sổ khi người dùng chốt, vẫn giữ quy tắc quỹ và phê duyệt. OCR không xác thực chuyển khoản ngân hàng.
 
 **Dữ liệu đầu vào:** Tên khoản chi, ngày phát sinh, ảnh bill, tổng tiền, ghi chú và người tạo.
 
-**Luồng chính:** Thêm ảnh hoặc nhập tay → kiểm tra tổng tiền → chọn người tham gia ở M03 → chọn nguồn tiền → xem lại → lưu.
+**Luồng chính:** Chọn ảnh trong nhóm → tự đọc tổng VND và hiện phần chia ngay → điều chỉnh người tham gia/nguồn tiền nếu cần → chốt khoản chi. Nếu tổng mơ hồ, chọn số tiền từ ảnh; nếu đọc lỗi, nhập tay. Mọi thay đổi số tiền hoặc người tham gia đều tính lại phần chia trước khi chốt.
 
 **Kết quả:** Khoản chi có đủ dữ liệu để chia tiền; ảnh gắn đúng khoản và được các thành viên hợp lệ xem.
 
 **Ngoại lệ:** Ảnh không đọc được thì cho nhập tay; không ghi sổ khi thiếu số tiền hoặc danh sách tham gia; giữ form nếu lưu lỗi.
 
-**Liên kết:** Quy tắc BR01, BR02, BR10. Nghiệm thu AT14, AT20. Câu hỏi Q09, Q10.
+**Liên kết:** Quy tắc BR01, BR02, BR10. Nghiệm thu AT14, AT20, AT45–49. Q09 đã chốt; Q10 còn mở.
 
 ### 4.4 M03 Người tham gia và chia tiền
 
@@ -203,7 +204,7 @@ Luồng liên kết chính: M01 xác định thành viên → M02 ghi bill → M
 
 **Kết quả:** Hiển thị riêng tiền thực có, tổng cần hoàn và tiền khả dụng; theo dõi tổng đóng theo người.
 
-**Ngoại lệ:** Thiếu quỹ theo BR06 đang chờ chốt; không cộng tiền chờ xác nhận; không trừ hai lần khi một thành viên ứng trước.
+**Ngoại lệ:** Chi trực tiếp và hoàn ứng cần đủ tiền theo BR06; không cộng tiền chờ xác nhận; không trừ hai lần khi một thành viên ứng trước.
 
 **Liên kết:** Quy tắc BR04–BR06, BR09, BR10. Nghiệm thu AT05, AT06, AT08, AT09, AT10, AT15, AT18. Câu hỏi Q02, Q04, Q05, Q06, Q08.
 
@@ -372,7 +373,7 @@ Nếu đủ nhóm nhưng thành viên dùng tiền riêng thanh toán, tăng qu�
 
 ### BR06 Quỹ không đủ
 
-Chính sách mặc định đề xuất: không chốt khoản chi mới thuộc quỹ nếu vượt quỹ khả dụng. Giữ thông tin nhập để người dùng quay lại sau khi bổ sung quỹ. Không tự tạo quỹ âm hoặc đổi thành nợ cá nhân. Chính sách chia phần thiếu cần người dùng chốt riêng trước khi bổ sung.
+Chi trực tiếp từ quỹ không được vượt quỹ khả dụng. Khi thành viên ứng tiền cá nhân cho hoạt động đủ nhóm, vẫn ghi nhận khoản quỹ cần hoàn dù quỹ chưa đủ tiền; không trừ tiền quỹ thực có và không tạo công nợ cá nhân. Quỹ khả dụng có thể âm để thể hiện phần thiếu cần nộp thêm, còn tiền thực có không được âm. Hoàn ứng không vượt tiền thực có hoặc khoản còn phải hoàn; cho hoàn từng phần và kiểm tra lại tại lúc xác nhận. Giữ thông tin nhập nếu chi trực tiếp hoặc hoàn ứng bị từ chối.
 
 ### BR07 Cộng dồn và bù trừ
 
@@ -478,7 +479,7 @@ Không lấy số dư nhập trực tiếp làm nguồn sự thật. Có thể l
 | AT12 | 100.000đ chia 3 | 33.334đ + 33.333đ + 33.333đ, không mất 1đ |
 | AT13 | Nhấn xác nhận hai lần cùng yêu cầu | Lần sau không hạch toán thêm |
 | AT14 | Không chọn ai, số tiền ≤0, ID lạ hoặc người trùng | Từ chối lưu, không đổi dữ liệu |
-| AT15 | Quỹ khả dụng 100.000đ, chi đủ nhóm 200.000đ | Báo thiếu 100.000đ, không âm quỹ, không tự chuyển sang nợ cá nhân |
+| AT15 | Quỹ khả dụng 100.000đ, chi trực tiếp từ quỹ 200.000đ | Báo thiếu 100.000đ, không âm quỹ, không tự chuyển sang nợ cá nhân |
 | AT16 | Khoản trả nợ chờ duyệt đã vượt số dư hiện tại | Chặn xác nhận; không sinh thanh toán vượt nghĩa vụ |
 | AT17 | Người không có quyền truy cập dữ liệu hoặc ảnh ngoài phạm vi được cấp | Bị từ chối tại server, kể cả khách có link riêng của nhóm khác |
 | AT18 | Hai thiết bị đồng thời xác nhận chi quỹ | Không chi vượt quỹ và không mất giao dịch |
@@ -508,6 +509,12 @@ Không lấy số dư nhập trực tiếp làm nguồn sự thật. Có thể l
 | AT42 | Trưởng nhóm duyệt vào hồ sơ cũ hoặc tạo mới; thử duyệt lặp | Liên kết đúng hồ sơ hoặc thêm đúng một người; bill cũ không đổi; người không có quyền bị chặn |
 | AT43 | Hồ sơ đã nhận, tài khoản đã thuộc nhóm, hai người nhận đồng thời | Không đổi chủ, không tạo membership trùng; thao tác nguyên tử; chuyển xử lý trùng |
 | AT44 | Thu hồi/cấp lại link hoặc từ chối yêu cầu | Link cũ và phiên khách tương ứng mất quyền; yêu cầu từ chối không tạo thành viên |
+| AT45 | Ảnh có tổng VND rõ ràng | Tự điền số tiền, hiện phần chia; chưa ghi sổ cho đến khi chốt |
+| AT46 | Có số tài khoản, mã giao dịch, số dư, tiền khách đưa/thừa | Không chọn các con số này làm tổng chia; không lấy số lớn nhất mặc định |
+| AT47 | Hai tổng khác nhau, số lẻ không hợp lệ hoặc ngoại tệ | Không tự chọn/quy đổi; yêu cầu chọn đúng tổng hoặc nhập VND |
+| AT48 | Người dùng sửa tiền khi ảnh đang đọc hoặc rời màn hình | Kết quả đến muộn không ghi đè số đã sửa, không tạo khoản và không lỗi màn hình |
+| AT49 | OCR lỗi, quá thời gian, ảnh thay/bỏ hoặc đổi người tham gia | Giữ ảnh khi đọc lỗi, cho nhập tay; không dùng số cũ của ảnh đã bỏ; tính lại phần chia khi đổi người |
+| AT50 | Quỹ rỗng hoặc thiếu tiền, một thành viên trả trước cho cả nhóm | Lưu bill, ghi quỹ cần hoàn người ứng; tiền thực có giữ nguyên, phần thiếu hiện rõ; chi trực tiếp/hoàn vượt tiền bị chặn kể cả khi xác nhận muộn |
 
 
 ## 8 Câu hỏi và quyết định còn mở
@@ -517,14 +524,14 @@ Các chi tiết Q01–Q15 hiện còn cần chốt; chức năng liên quan vẫ
 | ID | Câu hỏi cần thống nhất | Đề xuất hiện tại chưa được duyệt |
 | --- | --- | --- |
 | Q01 | Xác thực bill ngân hàng nghĩa là người nhận xác nhận hay đối soát giao dịch tự động? | Người nhận hoặc thủ quỹ xác nhận trước; tích hợp ngân hàng là yêu cầu riêng |
-| Q02 | Đủ người tham gia nhưng quỹ thiếu thì xử lý thế nào? | Chưa chốt khoản chi, yêu cầu nộp thêm; không tự chia phần thiếu |
+| Q02 | Đủ người tham gia nhưng quỹ thiếu thì xử lý thế nào? | Đã chốt cách sửa 12/11/2026: thành viên ứng trước vẫn được ghi nhận; chi trực tiếp cần đủ quỹ khả dụng, hoàn ứng cần đủ tiền thực có. Không tự chia phần thiếu thành nợ cá nhân (BR06, AT50) |
 | Q03 | Mọi khoản đều chia đều hay cần phần riêng, theo món hoặc trọng số? | Chia đều trong phạm vi đầu tiên |
 | Q04 | Nộp quỹ theo đợt bằng nhau hay mỗi người tự chọn số tiền? | Ghi nhận số thực nộp, chưa áp dụng hạn mức theo đợt |
 | Q05 | Ai được thêm, duyệt và sửa khoản chi? Thủ quỹ tự nộp thì ai duyệt? | Thành viên thêm; thủ quỹ duyệt tiền quỹ; người nhận duyệt trả nợ; cần quy tắc duyệt độc lập cho thủ quỹ |
 | Q06 | Tiền quỹ nằm ở tài khoản của một thủ quỹ hay nhiều người giữ? | Một thủ quỹ, một quỹ VND mỗi nhóm |
 | Q07 | Nếu có khách hoặc người vào nhóm sau, thế nào là đủ nhóm cho sự kiện đó? | Dùng danh sách thành viên có hiệu lực ở thời điểm sự kiện; khách cần quy tắc riêng |
 | Q08 | Người rời nhóm được hoàn phần quỹ còn dư thế nào? | Chưa tự hoàn; phải thống nhất cách tính trước |
-| Q09 | Đưa ảnh bill vào có bắt buộc tự đọc tổng tiền ngay bản đầu không? | Cho nhập tay và đính kèm ảnh; OCR cần được xác nhận là phạm vi bắt buộc hay bước sau |
+| Q09 | Đưa ảnh bill vào có bắt buộc tự đọc tổng tiền ngay bản đầu không? | Đã chốt 12/11/2026: tự đọc và tính phần chia ngay; tổng mơ hồ cho chọn, đọc lỗi cho nhập tay; chốt trước khi ghi sổ |
 | Q10 | Có cho nhiều người cùng ứng tiền một bill không? | Một người trả mỗi bill trong phạm vi đầu tiên |
 | Q11 | Cơ chế duyệt chế độ bù trừ và có cần duyệt từng đề xuất? | Bắt buộc cho nhóm chọn chế độ; ngưỡng duyệt cụ thể tham chiếu Q13 |
 | Q12 | Chốt kỳ khi có khoản chờ, nhập lùi ngày, kỳ đầu và múi giờ? | Chặn khoản chờ; mặc định tuần tại Asia/Ho_Chi_Minh; không hồi tố kỳ đã chốt |
@@ -578,3 +585,9 @@ Bản HTML 0.5 minh họa một tài khoản trong 3 nhóm gồm 6, 8 và 10 ng�
 | FR19 Nhắc tiền | Tổng quan → Thông báo | Tùy chọn nhận nhắc, tạo bản xem trước, lọc khoản đã trả/đang chờ |
 
 Các chức năng ngân hàng, OCR, định danh và đồng bộ nhiều thiết bị chưa được triển khai trong HTML. Đây là giới hạn của bản mẫu, không phải loại khỏi phạm vi sản phẩm đã xác nhận.
+
+### 10.1 Luồng đọc ảnh trong Flutter 0.3
+
+Chọn nhóm → Thêm khoản chi → Chọn ảnh bill. Android dùng mô hình ML Kit đóng gói trong APK; iOS dùng Apple Vision; Flutter web xử lý bằng Tesseract trong trình duyệt và cần mạng tải bộ đọc/mô hình lần đầu. Ảnh không gửi tới dịch vụ OCR. Bản HTML độc lập trong frontend vẫn là bản mẫu cũ.
+
+Tự điền tổng VND rõ ràng và tính phần chia; không suy ra người tham gia hay người trả từ tên trên ảnh. Giữ quy tắc đủ thành viên dùng quỹ, đi một phần nhóm dùng công nợ cá nhân. Nhập/sửa/chọn tổng rồi chốt là hành động ghi sổ; ảnh trả nợ/nộp quỹ vẫn cần luồng xác nhận riêng. Không hỗ trợ tự phát hiện giao dịch ngân hàng, đọc chi tiết từng món hay xác minh ngân hàng.
