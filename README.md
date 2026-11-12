@@ -93,4 +93,4 @@ Khi đủ cả nhóm, có thêm hai lựa chọn rõ ràng:
 - **Chi trực tiếp từ quỹ:** cần đủ quỹ khả dụng; không tạo công nợ cá nhân.
 - **Ứng trước cho quỹ:** người trả được quỹ ghi khoản cần hoàn, kể cả quỹ chưa đủ tiền; không tạo nợ cá nhân. Hoàn ứng cần đủ tiền thực có và người nhận xác nhận.
 
-Chọn đủ người không tự đổi chế độ chi. Bill đã lưu từ phiên bản trước giữ nguyên cách ghi quỹ/công nợ; thay đổi này không tự phân loại lại lịch sử. Kiểm chứng bản sửa ngày 12/11/2026 trên macOS: 39/39 kiểm thử Flutter và 6 bộ kiểm thử HTML đã qua; `flutter analyze` không có vấn đề. Các kết quả build cũ ở trên không xác nhận bản sửa này.
+Chọn đủ người không tự đổi chế độ chi. Bill đã lưu từ phiên bản trước giữ nguyên cách ghi quỹ/công nợ; thay đổi này không tự phân loại lại lịch sử. Kiểm chứng bản sửa ngày 12/11/2026 trên macOS: 39/39 kiểm thử Flutter và 6 bộ kiểm thử HTML đã qua; `flutter analyze` không có vấn đề. Build iOS Simulator debug bằng Xcode 27.2 thành công; đây là bản cho Simulator, chưa phải IPA có chữ ký cho iPhone. Các kết quả Android/web cũ ở trên không xác nhận bản sửa này.
