@@ -146,7 +146,16 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
-    await tester.tap(source);
+    final sourceButton = find.descendant(
+      of: source,
+      matching: find.byType(DropdownButton<String>),
+    );
+    await Scrollable.ensureVisible(
+      tester.element(sourceButton),
+      alignment: 0.5,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(sourceButton);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Ứng trước cho quỹ').last);
     await tester.pumpAndSettle();
@@ -184,7 +193,16 @@ void main() {
         300,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(source);
+      final sourceButton = find.descendant(
+        of: source,
+        matching: find.byType(DropdownButton<String>),
+      );
+      await Scrollable.ensureVisible(
+        tester.element(sourceButton),
+        alignment: 0.5,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(sourceButton);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Ứng trước cho quỹ').last);
       await tester.pumpAndSettle();
